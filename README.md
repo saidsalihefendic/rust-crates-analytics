@@ -34,9 +34,25 @@ The idea is that `raw` schema is the true state of the downloaded crates.io DB d
 
 To setup the Rust Crates Analytics project, run the command
 
+<details>
+<summary>Linux and macOS</summary>
+
 ```bash
 bash ./setup.sh
 ```
+
+</details>
+
+<details>
+<summary>Windows</summary>
+
+```bash
+powershell ./setup.sh
+```
+
+</details>
+
+
 
 This script will do the following:
 

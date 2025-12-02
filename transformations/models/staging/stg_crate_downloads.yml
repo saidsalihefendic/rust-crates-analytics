@@ -1,0 +1,37 @@
+version: 2
+
+models:
+  - name: stg_crate_downloads
+    description: Aggregate lifetime download counts per crate from crates.io dump, represents total downloads since crate creation and serves as a quick reference for overall popularity metrics
+    config:
+      contract:
+        enforced: true
+    columns:
+      - name: crate_id
+        data_type: bigint
+        description: Foreign key to stg_crates, identifies which crate these download counts belong to
+        constraints:
+          - type: not_null
+          - type: unique
+        tests:
+          - not_null:
+              config:
+                severity: error
+          - unique:
+              config:
+                severity: error
+          - relationships:
+              to: ref('stg_crates')
+              field: id
+              config:
+                severity: error
+
+      - name: downloads
+        data_type: bigint
+        description: Total cumulative downloads for this crate since its creation, aggregated from all versions
+        constraints:
+          - type: not_null
+        tests:
+          - not_null:
+              config:
+                severity: warn

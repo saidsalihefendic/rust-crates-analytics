@@ -1,0 +1,22 @@
+version: 2
+
+models:
+  - name: stg_reserved_crate_names
+    description: Lookup table of crate names reserved by crates.io that cannot be registered by users, protecting Rust compiler internals, standard library components, and system keywords (e.g., alloc, core, std) from namespace conflicts
+    config:
+      contract:
+        enforced: true
+    columns:
+      - name: name
+        data_type: varchar
+        description: Reserved crate name that is protected from user registration, serves as implicit primary key
+        constraints:
+          - type: not_null
+          - type: unique
+        tests:
+          - not_null:
+              config:
+                severity: error
+          - unique:
+              config:
+                severity: error

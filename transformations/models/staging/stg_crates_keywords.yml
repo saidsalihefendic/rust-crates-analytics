@@ -1,0 +1,38 @@
+version: 2
+
+models:
+  - name: stg_crates_keywords
+    description: Bridge table that associates crates with keyword tags for improved discoverability and search functionality, enabling many-to-many relationships between crates and keywords
+    config:
+      contract:
+        enforced: true
+    columns:
+      - name: crate_id
+        data_type: bigint
+        description: Foreign key to stg_crates, identifies which crate is being tagged
+        constraints:
+          - type: not_null
+        tests:
+          - not_null:
+              config:
+                severity: error
+          - relationships:
+              config:
+                severity: error
+              to: ref('stg_crates')
+              field: id
+
+      - name: keyword_id
+        data_type: bigint
+        description: Foreign key to stg_keywords, identifies which keyword tag is applied to the crate
+        constraints:
+          - type: not_null
+        tests:
+          - not_null:
+              config:
+                severity: error
+          - relationships:
+              config:
+                severity: error
+              to: ref('stg_keywords')
+              field: id

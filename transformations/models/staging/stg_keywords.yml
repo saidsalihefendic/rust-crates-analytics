@@ -1,0 +1,56 @@
+version: 2
+
+models:
+  - name: stg_keywords
+    description: Normalized lookup table for keyword tags used in crate discoverability and search, with each keyword appearing exactly once and tracking usage counts across the ecosystem
+    config:
+      contract:
+        enforced: true
+    columns:
+      - name: id
+        data_type: bigint
+        description: Primary key, unique identifier for each keyword
+        constraints:
+          - type: not_null
+          - type: unique
+        tests:
+          - not_null:
+              config:
+                severity: error
+          - unique:
+              config:
+                severity: error
+
+      - name: keyword
+        data_type: varchar
+        description: The actual keyword text used for tagging and search (e.g., "async", "web", "parsing"), serves as normalized lookup key
+        constraints:
+          - type: not_null
+          - type: unique
+        tests:
+          - not_null:
+              config:
+                severity: error
+          - unique:
+              config:
+                severity: error
+
+      - name: crates_cnt
+        data_type: bigint
+        description: Denormalized count of crates tagged with this keyword, must be non-negative
+        constraints:
+          - type: not_null
+        tests:
+          - not_null:
+              config:
+                severity: warn
+
+      - name: created_at
+        data_type: timestamp
+        description: Timestamp when this keyword was first created in the system
+        constraints:
+          - type: not_null
+        tests:
+          - not_null:
+              config:
+                severity: warn

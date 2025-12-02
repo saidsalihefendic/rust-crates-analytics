@@ -1,0 +1,43 @@
+version: 2
+
+models:
+  - name: stg_version_downloads
+    description: Daily download counts per crate version, sourced from both crates.io database dumps (3-month rolling window) and historical archives
+    config:
+      contract:
+        enforced: true
+    columns:
+      - name: version_id
+        data_type: bigint
+        description: Foreign key to stg_versions, identifies which crate version these downloads belong to
+        constraints:
+          - type: not_null
+        tests:
+          - not_null:
+              config:
+                severity: error
+          - relationships:
+              config:
+                severity: warn
+              to: ref('stg_versions')
+              field: id
+
+      - name: downloads
+        data_type: bigint
+        description: Total number of times this specific crate version was downloaded on the given date. Aggregated from crates.io download statistics, representing actual package installations via cargo or other package managers.
+        constraints:
+          - type: not_null
+        tests:
+          - not_null:
+              config:
+                severity: error
+
+      - name: date
+        data_type: date
+        description: Calendar date (UTC) when the downloads occurred. Data is aggregated daily, with recent data sourced from rolling 3-month database dumps and older data from historical archives.
+        constraints:
+          - type: not_null
+        tests:
+          - not_null:
+              config:
+                severity: error

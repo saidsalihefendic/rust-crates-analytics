@@ -1,0 +1,114 @@
+version: 2
+
+models:
+  - name: stg_dependencies
+    description: Tracks all dependencies for each crate version, including version requirements, dependency types (normal/build/dev), optional dependencies, and feature configurations, forming the complete dependency graph
+    config:
+      contract:
+        enforced: true
+    columns:
+      - name: id
+        data_type: bigint
+        description: Primary key for the dependency record
+        constraints:
+          - type: not_null
+          - type: unique
+        tests:
+          - not_null:
+              config:
+                severity: error
+          - unique:
+              config:
+                severity: warn
+
+      - name: version_id
+        data_type: bigint
+        description: Foreign key to stg_versions, identifies which crate version has this dependency
+        constraints:
+          - type: not_null
+        tests:
+          - not_null:
+              config:
+                severity: error
+          - relationships:
+              config:
+                severity: error
+              to: ref('stg_versions')
+              field: id
+
+      - name: crate_id
+        data_type: bigint
+        description: Foreign key to stg_crates, identifies which crate is being depended upon
+        constraints:
+          - type: not_null
+        tests:
+          - not_null:
+              config:
+                severity: error
+          - relationships:
+              config:
+                severity: error
+              to: ref('stg_crates')
+              field: id
+
+      - name: req
+        data_type: varchar
+        description: Version requirement specification string for the dependency (e.g., "^1.0", ">=2.3.0")
+        constraints:
+          - type: not_null
+        tests:
+          - not_null:
+              config:
+                severity: error
+
+      - name: kind
+        data_type: bigint
+        description: 'Dependency type: 0 = normal/runtime dependency, 1 = build dependency, 2 = dev dependency'
+        constraints:
+          - type: not_null
+        tests:
+          - not_null:
+              config:
+                severity: error
+          - accepted_values:
+              config:
+                severity: error
+              values: [0, 1, 2]
+
+      - name: optional
+        data_type: boolean
+        description: Indicates whether this dependency is optional and only compiled when explicitly activated by a feature flag, false means always required
+        constraints:
+          - type: not_null
+        tests:
+          - not_null:
+              config:
+                severity: error
+
+      - name: default_features
+        data_type: boolean
+        description: Controls whether to include the dependency's default feature set - true means use defaults (possibly with additional features), false means manually specify all features and opt-out of defaults
+        constraints:
+          - type: not_null
+        tests:
+          - not_null:
+              config:
+                severity: error
+
+      - name: features
+        data_type: varchar
+        description: Set/array of specific feature flags to enable from the dependency crate (e.g., {rt,net,sync}), empty set {} indicates no additional features beyond defaults
+        constraints:
+          - type: not_null
+        tests:
+          - not_null:
+              config:
+                severity: warn
+
+      - name: explicit_name
+        data_type: varchar
+        description: Alternative name for importing this dependency in code when using Cargo.toml package renaming (e.g., rename "icloud-auth" to "icloud_auth"), null when using the dependency's actual crate name (98.6% null)
+
+      - name: target
+        data_type: varchar
+        description: 'Conditional compilation predicate for platform-specific dependencies using Rust cfg syntax (e.g., cfg(unix), cfg(target_os = "windows"), cfg(target_arch = "wasm32")), null for platform-agnostic dependencies that compile on all targets (97.5% null)'

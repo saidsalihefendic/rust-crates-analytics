@@ -1,0 +1,13 @@
+data/
+.venv/
+logs/
+.idea/
+TODO.md
+.claude/
+.cursor/
+.vscode/
+.gemini/
+output.log
+static/
+visualization/
+MILESTONES.md

@@ -1,0 +1,161 @@
+version: 2
+
+models:
+  - name: stg_versions
+    description: Individual releases of crates with complete metadata including dependencies, features, binaries, and publishing information, forming the core version history for the Rust ecosystem
+    config:
+      contract:
+        enforced: true
+    columns:
+      - name: id
+        data_type: bigint
+        description: Primary key, unique identifier for this version
+        constraints:
+          - type: not_null
+          - type: unique
+        tests:
+          - not_null:
+              config:
+                severity: error
+          - unique:
+              config:
+                severity: error
+
+      - name: crate_id
+        data_type: bigint
+        description: Foreign key to stg_crates, identifies which crate this version belongs to
+        constraints:
+          - type: not_null
+        tests:
+          - not_null:
+              config:
+                severity: error
+          - relationships:
+              config:
+                severity: error
+              to: ref('stg_crates')
+              field: id
+
+      - name: num
+        data_type: varchar
+        description: 'Full semantic version string including optional build metadata (e.g., "1.0.9+20190617", "0.6.2+rclone-v1.64.1")'
+        constraints:
+          - type: not_null
+        tests:
+          - not_null:
+              config:
+                severity: error
+
+      - name: num_no_build
+        data_type: varchar
+        description: 'Semantic version string with build metadata stripped for comparison and sorting (e.g., "1.0.9", "0.6.2")'
+        constraints:
+          - type: not_null
+        tests:
+          - not_null:
+              config:
+                severity: error
+
+      - name: yanked
+        data_type: boolean
+        description: Indicates if version is deprecated and hidden from new dependency resolution, existing builds can still download yanked versions for reproducibility
+        constraints:
+          - type: not_null
+        tests:
+          - not_null:
+              config:
+                severity: error
+
+      - name: created_at
+        data_type: timestamp
+        description: Timestamp when this version was first published
+        constraints:
+          - type: not_null
+        tests:
+          - not_null:
+              config:
+                severity: warn
+
+      - name: updated_at
+        data_type: timestamp
+        description: Timestamp when version metadata was last updated
+        constraints:
+          - type: not_null
+        tests:
+          - not_null:
+              config:
+                severity: warn
+
+      - name: published_by
+        data_type: bigint
+        description: Foreign key to stg_users, identifies who published this version
+
+      - name: downloads
+        data_type: bigint
+        description: Total cumulative downloads for this specific version
+        constraints:
+          - type: not_null
+        tests:
+          - not_null:
+              config:
+                severity: warn
+
+      - name: crate_size
+        data_type: bigint
+        description: Binary package size in bytes
+
+      - name: checksum
+        data_type: varchar
+        description: SHA256 hash of the package for integrity verification
+
+      - name: license
+        data_type: varchar
+        description: 'License identifier for this version (e.g., "MIT", "Apache-2.0", "MIT OR Apache-2.0")'
+
+      - name: description
+        data_type: varchar
+        description: Version-specific description of functionality and purpose
+
+      - name: homepage
+        data_type: varchar
+        description: URL to project homepage
+
+      - name: repository
+        data_type: varchar
+        description: URL to source code repository (e.g., GitHub, GitLab)
+
+      - name: documentation
+        data_type: varchar
+        description: URL to documentation site (often docs.rs)
+
+      - name: rust_version
+        data_type: varchar
+        description: 'Minimum Rust version required (MSRV - Minimum Supported Rust Version, e.g., "1.56.0")'
+
+      - name: edition
+        data_type: bigint
+        description: 'Rust edition used by this version: 2015, 2018, 2021, or 2024'
+
+      - name: has_lib
+        data_type: boolean
+        description: Indicates whether this version provides a library that other crates can import
+
+      - name: bin_names
+        data_type: varchar
+        description: 'Set/array of binary executable names this version provides (e.g., {cargo}, {rg,ripgrep}), empty set or null for library-only crates'
+
+      - name: links
+        data_type: varchar
+        description: Name of native system library this crate links against for FFI (Foreign Function Interface), used for C/C++ bindings
+
+      - name: features
+        data_type: varchar
+        description: JSON-encoded feature definitions mapping feature names to their dependency lists, defines the complete feature graph this version provides to consumers
+
+      - name: categories
+        data_type: varchar
+        description: 'Denormalized set of category paths this version belongs to (e.g., {cryptography::cryptocurrencies,data-structures,parsing}), duplicates normalized data from stg_crates_categories for API performance'
+
+      - name: keywords
+        data_type: varchar
+        description: Denormalized set of keyword tags for this version, duplicates normalized data from stg_crates_keywords for API performance

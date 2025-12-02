@@ -1,0 +1,61 @@
+version: 2
+
+models:
+  - name: stg_crate_owners
+    description: Bridge table that enlists owners for each crate, supporting both individual users and team ownership through a polymorphic association pattern
+    config:
+      contract:
+        enforced: true
+    columns:
+      - name: crate_id
+        data_type: bigint
+        description: Foreign key to stg_crates, identifies which crate this ownership record belongs to
+        constraints:
+          - type: not_null
+        tests:
+          - not_null:
+              config:
+                severity: error
+          - relationships:
+              to: ref('stg_crates')
+              field: id
+              config:
+                severity: error
+
+      - name: owner_id
+        data_type: bigint
+        description: Polymorphic foreign key that references either users.id (when owner_kind=0) or teams.id (when owner_kind=1)
+        constraints:
+          - type: not_null
+        tests:
+          - not_null:
+              config:
+                severity: error
+
+      - name: owner_kind
+        data_type: bigint
+        description: Discriminator for polymorphic association - 0 indicates user ownership, 1 indicates team ownership
+        constraints:
+          - type: not_null
+        tests:
+          - not_null:
+              config:
+                severity: error
+          - accepted_values:
+              values: [0, 1]
+              config:
+                severity: error
+
+      - name: created_at
+        data_type: timestamp
+        description: Timestamp when this ownership record was established
+        constraints:
+          - type: not_null
+        tests:
+          - not_null:
+              config:
+                severity: warn
+
+      - name: created_by
+        data_type: bigint
+        description: User ID who created this ownership record, may be null for system-created or legacy ownership records

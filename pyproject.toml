@@ -1,0 +1,20 @@
+[project]
+name = "rust-crates-analytics"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "dbt-duckdb>=1.9.6",
+    "duckdb>=1.4.1",
+    "duckdb-engine>=0.17.0",
+    "mcp[cli]>=1.21.2",
+    "pandas>=2.3.3",
+    "plotly>=6.3.1",
+    "psycopg2-binary>=2.9.11",
+    "requests>=2.32.5",
+    "sqlalchemy>=2.0.44",
+    "streamlit>=1.51.0",
+    "tabulate>=0.9.0",
+    "tqdm>=4.67.1",
+]

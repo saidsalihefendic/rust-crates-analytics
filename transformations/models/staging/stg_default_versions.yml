@@ -1,0 +1,52 @@
+version: 2
+
+models:
+  - name: stg_default_versions
+    description: Tracks the default version (typically latest) for each crate along with total version count, providing quick lookups without aggregating the versions table
+    config:
+      contract:
+        enforced: true
+    columns:
+      - name: crate_id
+        data_type: bigint
+        description: Foreign key to stg_crates, identifies which crate this default version belongs to
+        constraints:
+          - type: not_null
+          - type: unique
+        tests:
+          - not_null:
+              config:
+                severity: error
+          - unique:
+              config:
+                severity: error
+          - relationships:
+              config:
+                severity: error
+              to: ref('stg_crates')
+              field: id
+
+      - name: version_id
+        data_type: bigint
+        description: Foreign key to stg_versions, identifies the default version for this crate
+        constraints:
+          - type: not_null
+        tests:
+          - not_null:
+              config:
+                severity: error
+          - relationships:
+              config:
+                severity: error
+              to: ref('stg_versions')
+              field: id
+
+      - name: num_versions
+        data_type: bigint
+        description: Denormalized count of total versions for this crate, must be a positive integer
+        constraints:
+          - type: not_null
+        tests:
+          - not_null:
+              config:
+                severity: warn

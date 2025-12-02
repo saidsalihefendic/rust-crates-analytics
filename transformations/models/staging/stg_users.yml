@@ -1,0 +1,56 @@
+version: 2
+
+models:
+  - name: stg_users
+    description: GitHub users who can own and publish crates on crates.io, storing user metadata and GitHub identifiers for authentication, with historical records preserved for deleted accounts using sentinel values (-1 or 0 for gh_id)
+    config:
+      contract:
+        enforced: true
+    columns:
+      - name: id
+        data_type: bigint
+        description: Primary key, crates.io internal identifier for the user, remains stable even when GitHub account is deleted
+        constraints:
+          - type: not_null
+          - type: unique
+        tests:
+          - not_null:
+              config:
+                severity: error
+          - unique:
+              config:
+                severity: error
+
+      - name: gh_id
+        data_type: bigint
+        description: 'GitHub internal user ID, positive for active accounts, sentinel values (-1 or 0) indicate deleted/ghost accounts (42 deleted accounts use these sentinel values)'
+        constraints:
+          - type: not_null
+        tests:
+          - not_null:
+              config:
+                severity: error
+
+      - name: gh_login
+        data_type: varchar
+        description: 'GitHub username, may be reused when accounts are deleted and usernames recycled, becomes "ghost" for some deleted accounts'
+        constraints:
+          - type: not_null
+        tests:
+          - not_null:
+              config:
+                severity: error
+
+      - name: gh_avatar
+        data_type: varchar
+        description: URL to user avatar image from GitHub
+        constraints:
+          - type: not_null
+        tests:
+          - not_null:
+              config:
+                severity: warn
+
+      - name: name
+        data_type: varchar
+        description: Display name set by the user, optional field with 19.6% null values for users who haven't set a display name

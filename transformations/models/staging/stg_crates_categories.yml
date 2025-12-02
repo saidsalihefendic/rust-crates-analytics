@@ -1,0 +1,38 @@
+version: 2
+
+models:
+  - name: stg_crates_categories
+    description: Bridge table that establishes many-to-many relationships between crates and categories, allowing each crate to be classified under multiple categories
+    config:
+      contract:
+        enforced: true
+    columns:
+      - name: crate_id
+        data_type: bigint
+        description: Foreign key to stg_crates, identifies which crate is being categorized
+        constraints:
+          - type: not_null
+        tests:
+          - not_null:
+              config:
+                severity: error
+          - relationships:
+              to: ref('stg_crates')
+              field: id
+              config:
+                severity: error
+
+      - name: category_id
+        data_type: bigint
+        description: Foreign key to stg_categories, identifies which category this crate belongs to
+        constraints:
+          - type: not_null
+        tests:
+          - not_null:
+              config:
+                severity: error
+          - relationships:
+              to: ref('stg_categories')
+              field: id
+              config:
+                severity: error

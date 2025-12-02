@@ -1,0 +1,83 @@
+version: 2
+
+models:
+  - name: stg_crates
+    description: >
+      Staged crates data. Full refresh from raw.crates on each run.
+      This table describes crates that are present in the Rust ecosystem
+    config:
+      contract:
+        enforced: true
+    
+    columns:
+      - name: id
+        description: "Primary key - unique crate identifier"
+        data_type: bigint
+        constraints:
+          - type: not_null
+          - type: unique
+        tests:
+          - unique:
+              config:
+                severity: error
+          - not_null:
+              config:
+                severity: error
+      
+      - name: name
+        description: "Crate name (must be unique in Rust ecosystem)"
+        data_type: varchar
+        constraints:
+          - type: not_null
+          - type: unique
+        tests:
+          - unique:
+              config:
+                severity: error
+          - not_null:
+              config:
+                severity: error
+      
+      - name: created_at
+        description: "Timestamp when crate was first published (UTC)"
+        data_type: timestamp
+        tests:
+          - not_null:
+              config:
+                severity: warn
+      
+      - name: updated_at
+        description: "Timestamp of last update to crate metadata (UTC)"
+        data_type: timestamp
+        tests:
+          - not_null:
+              config:
+                severity: warn
+      
+      - name: description
+        description: "Crate description from Cargo.toml"
+        data_type: varchar
+      
+      - name: documentation
+        description: "URL to documentation"
+        data_type: varchar
+      
+      - name: homepage
+        description: "Homepage URL"
+        data_type: varchar
+      
+      - name: repository
+        description: "Source repository URL"
+        data_type: varchar
+      
+      - name: readme
+        description: "README content"
+        data_type: varchar
+      
+      - name: max_features
+        description: "Maximum allowed features for this crate"
+        data_type: bigint
+      
+      - name: max_upload_size
+        description: "Maximum upload size allowed for this crate"
+        data_type: bigint

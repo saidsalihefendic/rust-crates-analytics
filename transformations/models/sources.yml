@@ -1,0 +1,29 @@
+version: 2
+
+sources:
+  - name: raw
+    meta:
+      owner: "Data Engineering Team"
+      ingestion_tool: "load_duckdb.py"
+      upstream_system: "crates.io"
+    schema: raw
+    tables:
+      - name: categories
+      - name: crate_downloads
+      - name: crate_owners
+      - name: crates
+      - name: crates_categories
+      - name: crates_keywords
+      - name: default_versions
+      - name: dependencies
+      - name: keywords
+      - name: metadata
+      - name: reserved_crate_names
+      - name: teams
+      - name: users
+      - name: version_downloads
+        loaded_at_field: "date::TIMESTAMP"
+        freshness:
+          warn_after: {count: 1, period: day}
+          error_after: {count: 3, period: day}
+      - name: versions

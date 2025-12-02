@@ -1,0 +1,80 @@
+version: 2
+
+models:
+  - name: stg_teams
+    description: GitHub teams that can own crates on crates.io, storing team metadata and GitHub identifiers for authentication and ownership management
+    config:
+      contract:
+        enforced: true
+    columns:
+      - name: id
+        data_type: bigint
+        description: Primary key, crates.io internal identifier for the team
+        constraints:
+          - type: not_null
+          - type: unique
+        tests:
+          - not_null:
+              config:
+                severity: error
+          - unique:
+              config:
+                severity: error
+
+      - name: login
+        data_type: varchar
+        description: 'GitHub team identifier in format github:org:team (e.g., github:rust-lang:cargo), serves as unique lookup key'
+        constraints:
+          - type: not_null
+          - type: unique
+        tests:
+          - not_null:
+              config:
+                severity: error
+          - unique:
+              config:
+                severity: error
+
+      - name: github_id
+        data_type: bigint
+        description: GitHub's internal team ID, used for GitHub API integration and authentication
+        constraints:
+          - type: not_null
+          - type: unique
+        tests:
+          - not_null:
+              config:
+                severity: error
+          - unique:
+              config:
+                severity: error
+
+      - name: org_id
+        data_type: bigint
+        description: GitHub's internal organization ID, external reference to the parent organization in GitHub (not present in this database)
+        constraints:
+          - type: not_null
+        tests:
+          - not_null:
+              config:
+                severity: warn
+
+      - name: name
+        data_type: varchar
+        description: Display name for the team
+        constraints:
+          - type: not_null
+        tests:
+          - not_null:
+              config:
+                severity: warn
+
+      - name: avatar
+        data_type: varchar
+        description: URL to the team's avatar image from GitHub
+        constraints:
+          - type: not_null
+        tests:
+          - not_null:
+              config:
+                severity: warn

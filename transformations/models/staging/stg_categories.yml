@@ -1,0 +1,70 @@
+version: 2
+
+models:
+  - name: stg_categories
+    description: 'Used to group crates depending on the field they are best used for, supports hierarchical structure with :: delimiter'
+    config:
+      contract:
+        enforced: true
+    columns:
+      - name: id
+        data_type: bigint
+        description: Primary key, unique identifier for each category
+        constraints:
+          - type: not_null
+          - type: unique
+        tests:
+          - not_null:
+              severity: error
+          - unique:
+              severity: error
+
+      - name: category
+        data_type: varchar
+        description: 'Display name of the category, supports nested categories with :: delimiter (e.g., Science::Bioinformatics)'
+        constraints:
+          - type: not_null
+        tests:
+          - not_null:
+              severity: error
+
+      - name: slug
+        data_type: varchar
+        description: URL-friendly version of category name, used for lookups and routing
+        constraints:
+          - type: not_null
+          - type: unique
+        tests:
+          - not_null:
+              severity: error
+          - unique:
+              severity: error
+
+      - name: path
+        data_type: varchar
+        description: Hierarchical path for category organization, always populated and unique
+        constraints:
+          - type: not_null
+          - type: unique
+        tests:
+          - not_null:
+              severity: warn
+          - unique:
+              severity: error
+
+      - name: description
+        data_type: varchar
+        description: Text explanation of the category purpose, may be null for some categories
+
+      - name: crates_cnt
+        data_type: bigint
+        description: Denormalized count of crates in this category, should be non-negative
+
+      - name: created_at
+        data_type: timestamp
+        description: Timestamp when the category was created
+        constraints:
+          - type: not_null
+        tests:
+          - not_null:
+              severity: warn

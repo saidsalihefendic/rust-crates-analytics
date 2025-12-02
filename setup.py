@@ -75,7 +75,6 @@ def main():
     print("="*40 + "\n")
     
     print("This will:")
-    print("  0. Sync uv project (Python + dependencies)")
     print("  1. Download crates.io database dump (will take ~2GB of storage)")
     print("  2. Create DuckDB schemas")
     print("  3. Load 3 months of data (will take ~6GB of storage)")
@@ -92,10 +91,6 @@ def main():
             log_info("Will skip download and use existing file")
     
     check_prerequisites()
-    
-    print()
-    log_info("[0/4] Syncing uv project (Python + dependencies)...")
-    run_command(["uv", "sync"])
     
     print()
     log_info("[1/4] Downloading and extracting crates.io database dump...")

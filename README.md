@@ -34,25 +34,10 @@ The idea is that `raw` schema is the true state of the downloaded crates.io DB d
 
 To setup the Rust Crates Analytics project, run the command
 
-<details>
-<summary>Linux and macOS</summary>
-
 ```bash
-bash ./setup.sh
+uv sync
+uv run setup.py
 ```
-
-</details>
-
-<details>
-<summary>Windows</summary>
-
-```bash
-powershell ./setup.sh
-```
-
-</details>
-
-
 
 This script will do the following:
 
@@ -66,7 +51,7 @@ This script will do the following:
 If you want to refresh your tables and update version_downloads table, run
 
 ```bash
-bash ./update_duckdb.sh
+uv run update.py
 ```
 
 This will do the following:

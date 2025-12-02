@@ -1,116 +1,96 @@
-# Rust Crates Data Warehouse
+# Rust Crates Analytics
 
-This README will contain all the info regarding the project, its architecture, its tools and what we are accomplishing with each stage.
+**Version**: 1.0
 
-## Project setup
+This project lets you analyze Rust Crates Ecosystem locally on your machine. You can query the data directly with your DB Client that supports DuckDB or use AI agent to connect to the local MCP server here. Includes a Streamlit dashboard with example visualizations for reference.
 
-The easiest way to setup the project is simply running the command in the project root directory
+## Features
+
+- Right at the setup, 3 months of available data in `staging.stg_version_downloads`
+- dbt transformations for data quality checks and data contract enforcement
+- Incremental ingestion pipeline for `staging.stg_version_downloads`, full refresh on all other tables
+- Backfill historical data from `version_downloads` archives by date or number of days
+- MCP HTTP Server ready for use after the setup
+
+## Prerequisites
+
+- uv installed (>=0.9.7)
+- Minimum 15GB free space
+
+## Architecture
+
+This project is following an ELT Data Warehouse pattern with transformations from `raw` -> `staging` with possibilities to add -> `marts` as well.
+
+The idea is that `raw` schema is the true state of the downloaded crates.io DB dump, while `staging` contains the full refresh of all tables from `raw` except for `staging.stg_version_downloads`, where we implement the incremental strategy for both updates and backfills. We implement this using Python and dbt with DuckDB engine.
+
+![Architecture Diagram](./assets/architecture.png)
+
+
+## Data Model
+
+![ERD](./assets/erd.png)
+
+## Project Setup
+
+To setup the Rust Crates Analytics project, run the command
 
 ```bash
-./setup.sh
+bash ./setup.sh
 ```
 
-This will do all the work behind the scenes and create a workable DuckDB with crates.io dump db with all associated tables from the dump db in staging schema.
+This script will do the following:
 
-After the initial setup, when you decide to start playing with the project again, you can trigger the `update_duckdb.sh` script for updating to latest dump from crates.io. Bear in mind, this can delete some of the data about crates and versions (due to crates.io privacy policy)
+0. Sync uv project (Python + dependencies)
+1. Download crates.io database dump (will take ~5GB of storage)
+2. Create DuckDB schemas
+3. Load 3 months of data (will take ~5GB of storage)
+4. Run dbt transformations and tests with `dbt build`
+
+
+If you want to refresh your tables and update version_downloads table, run
 
 ```bash
-./update_duckdb.sh
+bash ./update_duckdb.sh
 ```
 
-You can also load more history into version_downloads by triggering the backfill script in the project root directory
+This will do the following:
+
+1. Download latest crates.io database dump
+2. Recreate all raw tables from dump (crates, versions, etc.)
+3. Checking the freshness of the updated raw schema
+4. Running dbt transformations (incremental mode for version_downloads, others full refresh) and tests
+
+
+If you wish do to the backfill, trigger the backfill script with either backfill to date or backfill days:
 
 ```bash
-uv run scripts/ingest_vd_archives --backfill-days <INT>
+uv run scripts/ingest_vd_archives.py --backfill-to-date <YYYY-MM-DD>
 ```
-where `--backfill-days` represents from minimum date in the `staging.stg_version_downloads`.
 
 OR
 
 ```bash
-uv run scripts/ingest_vd_archives --backfill-to-date <date>
+uv run scripts/ingest_vd_archives.py --backfill-days <INT>
 ```
 
-where `--backfill-to-date` represents a date in YYYY-MM-DD. Will throw error if greater than min(date) from stg_version_downloads.
+## MCP Setup
 
-
-You can checkout the models in the dbt docs to receive more information on data discoverability and data quality checks. Simply run
-
-```bash
-cd transformations
-uv run dbt docs generate && uv run dbt docs serve
-```
-
-## Architecture discussion
-
-We will need to update README regarding the architecture of the project. The architecture will be a ELT strategy of loading the data into staging, then transforming and loading tables into marts tables for the dasbhoards. We also need to mention snapshotting and differential ingestion and slightly unusual approach of ingesting archives directly to staging, which breaks the ingestion pattern.
-
-Project should be designed in modular fashion in such a way that we can upgrade the scales of our projects. The only immutable part is Python3 as our base for scripting and dbt for transformations and data governance, but all other can be replaced.
-
-## Tools requirements
-
-The tools that will realize this architecture, as PoC, will be 
-- DuckDB for our DB
-- Python3 scripts as our immutable base
-- dbt for transformations and data quality checks, as well as minimum data governance
-- Streamlit for data visualization
-
-This needs to be discussed further and update the README of the project regarding the tools and architecture and why we went this way. The tools are decided because of the overhead cost of other tools that can be quite expensive in time and money efforts, while these are minimal tools that do the job as well for this project.
-
-## Data Sources
-
-- Crates db dump (90 day window in version_downloads, others are in all-time state): https://static.crates.io/db-dump.tar.gz
-- Crates version_downloads historical archives: https://static.crates.io/archive/version-downloads/
-
-**IMPORTANT**: We will need schematics for both architecture what, when and why, and other schematics for how with the tools and constraints
-
-## Manual Ingestion and Transformation Flow
-
-If you wish to do the project setup manually, follow this step by step guide to have your DuckDB loaded and ready for experimenting and usage
-
-```bash
-# Step 0. Setup uv project
-uv sync
-
-# Step 1. download the actual crates io dump db
-uv run scripts/ingest_dump.py 
-
-# If you already have dump, then you can just extract it again
-uv run scripts/ingest_dump.py --skip-download
-
-# Step 2. Create DuckDB filepath with three schemas: raw, staging and marts
-uv run scripts/create_duckdb.py (to create DuckDB file with raw, staging and marts schemas, this is idempotent operation)
-
-# Step 3. Load from extracted db dump crates.io to duckdb path, this will delete the extracted files
-uv run scripts/load_duckdb.py
-
-# Step 4. Run dbt transformations from raw -> staging
-cd transformations
-uv run dbt run --profiles-dir .
-cd ..
-
-# (OPTIONAL) Step 5. Backfill for number of days starting from min(date) from DuckDB file
-uv run scripts/ingest_vd_archives.py --backfill-days [INT]
-uv run scripts/ingest_vd_acrhives.py --backfill-to-date [YYYY-MM-DD]
-```
-
-You should be able to query data from raw and staging schema now, have a look around using a database client that supports DuckDB
-
-The staging schema contains all the history of the crates.io
-DuckDB handles big data quite nicely, it is a good show of how it behaves
-
-## Run DuckDB MCP Server
-
-Run
+If you wish to use the MCP to analyze Rust Crates Analytics project with an AI agent that has MCP client, you can do that with:
 
 ```bash
 uv run mcp/mcp_duckdb_http.py
 ```
 
-And add as HTTP transport MCP `http://127.0.0.1:8000/mcp`. As an example for Claude:
+Example on how to add HTTP MCP for Claude Code:
 
 ```bash
-claude mcp add --transport http duckdb_crates http://127.0.0.1:8000/mcp
+claude mcp add --transport duckdb_crates http://127.0.0.1:8000/mcp
+```
+
+You can also add the stdio MCP server if you want
+
+```bash
+claude mcp add duckdb_crates_stdio /path/to/project/.venv/bin/python /path/to/project/mcp/mcp_duckdb_server.py
 ```
 
 Verify it with
@@ -118,3 +98,13 @@ Verify it with
 ```bash
 claude mcp list
 ```
+
+You should see _Connected_.
+
+Then trigger the prompt
+
+```bash
+/setup_crates_analytics_context
+```
+
+to load the context of the Rust Crates Analytics project with preloaded prompt and have fun discovering and chatting!

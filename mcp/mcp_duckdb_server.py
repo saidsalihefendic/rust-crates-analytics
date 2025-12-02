@@ -142,7 +142,7 @@ async def read_resource(uri: str) -> str:
 async def list_prompts() -> list[Prompt]:
     return [
         Prompt(
-            name="setup-rust-crates-analytics",
+            name="setup_crates_analytics_context",
             description="Load context about the Rust Crates Analytics project",
             arguments=[]
         )
@@ -151,7 +151,7 @@ async def list_prompts() -> list[Prompt]:
 
 @app.get_prompt()
 async def get_prompt(name: str, arguments: dict) -> GetPromptResult:
-    if name == "setup-rust-crates-analytics":
+    if name == "setup_crates_analytics_context":
         return GetPromptResult(
             messages=[
                 PromptMessage(

@@ -47,8 +47,8 @@ main() {
     echo "This will:"
     echo "  1. Download latest crates.io database dump"
     echo "  2. Recreate all raw tables from dump (crates, versions, etc.)"
-    echo "  3. Run dbt transformations (incremental for version_downloads)"
-    echo "  4. Run dbt tests"
+    echo "  3. Checking the freshness of the updated raw schema"
+    echo "  4. Running dbt transformations (incremental mode for version_downloads, others full refresh) and tests"
     echo ""
     echo "Estimated time: 5-10 minutes"
     echo ""
@@ -62,13 +62,13 @@ main() {
     uv run scripts/load_duckdb.py
 
     echo ""
-    log_info "[3/4] Running dbt transformations (incremental mode)..."
+    log_info "[3/4] Checking the freshness of the raw schema..."
     cd transformations
     uv run dbt source freshness --profiles-dir .
     cd ..
 
     echo ""
-    log_info "[4/4] Running dbt transformations (incremental mode) and tests..."
+    log_info "[4/4] Running dbt transformations (incremental mode for version_downloads, others full refresh) and tests..."
     cd transformations
     uv run dbt build --profiles-dir .
     cd ..

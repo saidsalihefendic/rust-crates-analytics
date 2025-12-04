@@ -97,7 +97,7 @@ async def setup_crates_analytics_context():
 
 **Available Data:**
 - Staging schema contains cleaned, validated data from crates.io
-- Date range: figure out from the read_query tool, please
+- Date range: figure out from the query_duckdb tool, please
 - You can expect around ~200k crates, ~1.75M versions, billions of download records
 
 **Key Tables:**

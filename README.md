@@ -14,7 +14,7 @@ This project lets you analyze Rust Crates Ecosystem locally on your machine. You
 
 ## Prerequisites
 
-- uv installed (>=0.9.7)
+- uv installed
 - Minimum 15GB free space
 
 ## Architecture

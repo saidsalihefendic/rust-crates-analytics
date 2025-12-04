@@ -74,6 +74,13 @@ OR
 uv run scripts/ingest_vd_archives.py --backfill-days <INT>
 ```
 
+Optionally, you can run the Streamlit dashboard for Orphan IDs with
+
+```bash
+uv run streamlit run visualization/orphan_dashboard.py
+```
+
+
 ## MCP Setup
 
 If you wish to use the MCP to analyze Rust Crates Analytics project with an AI agent that has MCP client, you can do that with:

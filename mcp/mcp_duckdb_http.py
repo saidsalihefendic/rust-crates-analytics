@@ -48,7 +48,7 @@ async def list_tables():
     )]
 
 @mcp.tool()
-async def read_query(sql: str):
+async def query_duckdb(sql: str):
     """Execute a read-only SQL query against the crates.io DuckDB database"""
     # Safety check
     if not sql.strip().upper().startswith('SELECT'):
